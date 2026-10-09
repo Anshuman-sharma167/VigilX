@@ -1,0 +1,42 @@
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+.vite/
+.npm-cache/
+
+# Local tool and deployment state
+.impeccable/
+.verification/
+.vercel/
+docs/handoff-research.md
+
+# Environment files and local package-manager credentials
+.env
+.env.*
+!.env.example
+.npmrc
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Private keys and credential exports
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials*.json
+*-credentials.json
+service-account*.json
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
