@@ -5,6 +5,7 @@ VigilX Lite is a frontend-only React prototype for reviewing synthetic Kubernete
 The prototype demonstrates:
 
 - a dashboard with summary metrics, severity distribution, suspicious activity, and a compact risk timeline;
+- a presenter-controlled live simulation that replays suspicious events and recalculates the score after each event;
 - a searchable, filterable alert queue;
 - alert details with feature values, triggered rules, event history, and a session-only human-review status;
 - a Method view that documents every rule, threshold, confidence condition, and limitation;
@@ -31,6 +32,12 @@ npm run build
 ```
 
 The automated checks cover score boundaries, rule points, confidence logic, empty input, event window aggregation, and the expected score, severity, and confidence for every supplied account window. The production build is written to `dist/`.
+
+## Demonstration
+
+Open **Live demo** in the navigation. Use **Run simulation** for an automatic replay or **Next event** to explain the sequence manually. The synthetic account progresses from normal monitoring to a review threshold and then a High-severity alert. Once the score reaches 40, **Open generated alert** shows the same evidence and human-review workflow used by the alert queue.
+
+The demo can be opened directly with `#simulation`. Add `?autoplay=1` before the hash to start the replay automatically, for example: `/?autoplay=1#simulation`.
 
 ## Demo scoring thresholds
 

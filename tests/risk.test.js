@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { scoreWindow, summarizeEvents } from '../src/lib/risk.js'
 import auditEvents from '../src/data/audit-events.json' with { type: 'json' }
+import { demoEvents } from '../src/data/demo-events.js'
 
 test('scores all five rules and caps risk at 100', () => {
   const result = scoreWindow({
@@ -71,4 +72,15 @@ test('scores every supplied synthetic account window as documented', () => {
 
 test('returns an empty window list when no local events exist', () => {
   assert.deepEqual(summarizeEvents([]), [])
+})
+
+test('live demo crosses the documented review thresholds', () => {
+  const scoreAt = (count) => summarizeEvents(demoEvents.slice(0, count))[0].score
+
+  assert.equal(scoreAt(3), 0)
+  assert.equal(scoreAt(4), 30)
+  assert.equal(scoreAt(5), 45)
+  assert.equal(scoreAt(6), 75)
+  assert.equal(scoreAt(10), 100)
+  assert.equal(summarizeEvents(demoEvents)[0].severity, 'High')
 })

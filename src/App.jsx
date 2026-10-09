@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   ListFilter,
   Network,
+  Radio,
   Search,
   ShieldCheck,
   UserRoundCheck,
@@ -20,12 +21,21 @@ import {
 } from 'lucide-react'
 import auditEvents from './data/audit-events.json'
 import { scoringRules, summarizeEvents } from './lib/risk.js'
+import LiveSimulation from './components/LiveSimulation.jsx'
 
 const navigation = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'simulation', label: 'Live demo', icon: Radio },
   { id: 'queue', label: 'Alert queue', icon: ListFilter },
   { id: 'method', label: 'Method', icon: CircleHelp },
 ]
+
+const navigableViews = new Set(navigation.map(({ id }) => id))
+
+function initialView() {
+  const requestedView = window.location.hash.slice(1)
+  return navigableViews.has(requestedView) ? requestedView : 'dashboard'
+}
 
 const featureMeta = [
   { key: 'requestCount', label: 'Requests', icon: Activity },
@@ -222,7 +232,7 @@ function AlertQueue({ windows, onSelect }) {
   )
 }
 
-function AlertDetail({ window, reviewStatus, onStatusChange, onBack }) {
+function AlertDetail({ window, reviewStatus, onStatusChange, onBack, backLabel = 'Back to alert queue' }) {
   const featureValue = (key, value) => {
     if (key === 'hasPrivilegedAction') return value ? 'Yes' : 'No'
     if (key === 'averageGapSeconds') return value === null ? 'N/A' : `${value}s`
@@ -231,7 +241,7 @@ function AlertDetail({ window, reviewStatus, onStatusChange, onBack }) {
 
   return (
     <>
-      <button className="back-button" onClick={onBack}><ArrowLeft size={17} /> Back to alert queue</button>
+      <button className="back-button" onClick={onBack}><ArrowLeft size={17} /> {backLabel}</button>
       <PageHeader
         title={shortAccount(window.account)}
         description={`10-minute window starting ${formatDate(window.windowStart)}`}
@@ -340,18 +350,22 @@ function Method() {
 
 export default function App() {
   const windows = useMemo(() => summarizeEvents(auditEvents), [])
-  const [view, setView] = useState('dashboard')
+  const [view, setView] = useState(initialView)
   const [selected, setSelected] = useState(null)
+  const [detailReturnView, setDetailReturnView] = useState('queue')
   const [reviewStatuses, setReviewStatuses] = useState({})
 
-  function openDetail(window) {
+  function openDetail(window, returnView = 'queue') {
     setSelected(window)
+    setDetailReturnView(returnView)
     setView('detail')
+    window.history.replaceState(null, '', '#detail')
   }
 
   function navigate(nextView) {
     setView(nextView)
     if (nextView !== 'detail') setSelected(null)
+    window.history.replaceState(null, '', `#${nextView}`)
   }
 
   return (
@@ -370,13 +384,15 @@ export default function App() {
       </aside>
       <main id="main-content" className="content" tabIndex="-1">
         {view === 'dashboard' && <Dashboard windows={windows} onSelect={openDetail} />}
+        {view === 'simulation' && <LiveSimulation onOpenAlert={(window) => openDetail(window, 'simulation')} />}
         {view === 'queue' && <AlertQueue windows={windows} onSelect={openDetail} />}
         {view === 'detail' && selected && (
           <AlertDetail
             window={selected}
             reviewStatus={reviewStatuses[selected.id] ?? 'Unreviewed'}
             onStatusChange={(status) => setReviewStatuses((current) => ({ ...current, [selected.id]: status }))}
-            onBack={() => navigate('queue')}
+            onBack={() => navigate(detailReturnView)}
+            backLabel={detailReturnView === 'simulation' ? 'Back to live demo' : 'Back to alert queue'}
           />
         )}
         {view === 'method' && <Method />}
